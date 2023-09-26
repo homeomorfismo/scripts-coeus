@@ -35,4 +35,3 @@ mkdir -p $BUILD_DIR && cd $BUILD_DIR
 cmake ../ -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_DIR
 make -j10
 make install
-

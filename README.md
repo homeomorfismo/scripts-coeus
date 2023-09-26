@@ -1,5 +1,5 @@
-# coeus-ngsolve
-Instructions / scripts for setting up serial and parallel installations of Netgen/Ngsolve on the PSU Coeus or Gaia cluster
+# scrips-coeus
+Instructions / scripts for setting up serial and parallel installations of Netgen/Ngsolve on the PSU Coeus or Gaia cluster.
 
 ## Overview
 Following this installation procedure, you should end up with
@@ -87,32 +87,43 @@ It's a good idea to check the last line of each of the module files to ensure th
  
 ### Step 4
 
-Edit the file `~/.bashrc` on the cluster node using nano, vim or emacs, pasting in the following lines.  If you
-don't know any of these editors, use `nano ~/.bashrc`.
-  Uncomment the line for the cluster you are setting up.  The `$CLUSTER` variable is used by several scripts.
+Edit the file `~/.bashrc` on the cluster node using nano, vim or emacs, pasting in the following lines.
+If you don't know any of these editors, use `nano ~/.bashrc`.
+
+```
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+```
+
+Move `bash_aliases` to your `$HOME` directory.
+**Source these changes by `source ~/.bashrc`**
+```
+mv $HOME/scripts-coeus/bash_aliases $HOME/.bash_aliases
+source $HOME/.bashrc
+```
+**Uncomment the line for the cluster you are setting up.**
+The `$CLUSTER` variable is used by several scripts.
+The modules `ngsolve/serial`, `ngsolve/parallel` and `ngsolve/phi_serial` should now appear if you type `module avail`.
+
+`bash_aliases` will contain the main paths, and you can modify this file for enhancing its functionality.
 
 ```
 # export CLUSTER="GAIA"
 # export CLUSTER="COEUS"
 
 export COMMON_INSTALL_DIR=~/common/install
-
 export PATH=$COMMON_INSTALL_DIR/bin:$PATH
-
 export LD_LIBRARY_PATH=$COMMON_INSTALL_DIR/lib:$LD_LIBRARY_PATH
-
 export PYTHONPATH=$HOME/local:$PYTHONPATH
 
 module use --append $HOME/privatemodules
 ```
 
-Source these changes by `source ~/.bashrc`
-
-The modules `ngsolve/serial`, `ngsolve/parallel` and `ngsolve/phi_serial` should now appear if you type `module avail`.
-
 ### Step 5
 
-Run `./install_cmake3 3.1.3` to install cmake3 in a 'common' directory 
+Bootstrap cmake.
+Run `./install_cmake 3.1.3` to install cmake3 in a 'common' directory 
 in your `$HOME` folder (see the tree above).
 
 Note: Cmake 3.1.3 is not a recent version, but we need to install it first because recent
@@ -127,7 +138,7 @@ Now you're ready to install a higher CMake version by running the install script
 
 On Coeus or Gaia, you should be able to do:
 
-`./install_cmake3 3.15.7`
+`./install_cmake 3.15.7`
 
 You may not be able to get a higher version like 3.16 or 3.17 because the openssl is pretty old on both clusters
 
@@ -149,14 +160,29 @@ On Gaia, because of the *really* old openssl, the highest you can go is:
 Python versions for download are listed here:
 [https://www.python.org/downloads/].
 
+#### Optional: Python enviroments
+
+Verify with `which python` or `which python3` the correct Python we want to use.
+The right Python will point to `$HOME/common/install/bin`.
+Do
+```
+mkdir $HOME/common/venv
+python -m venv <name_venv>
+source <name_venv>/bin/activate
+```
+
+This last command can be added to your `.bash_aliases`.
+
 ### Step 7 
 
+Verify you are either using the right Python (or its virtual enviroment). 
+It is recomended to do
 ```
 pip3 install --upgrade pip
 pip3 install ipython numpy scipy sympy matplotlib pytest cxroots
 ```
 
-### Step 8
+#### Optional 
 
 Create a local directory where you will put Python projects so (if they have an `__init__.py` file), they will
 be in the `PYTHON_PATH` with our `.bashrc` setup
@@ -167,7 +193,7 @@ cd ~/local
 git clone https://bitbucket.org/jayggg/pyeigfeast.git
 ```
 
-### Step 9
+### Step 8
 
 Open `install_ngsolve_serial` in an editor to make sure the cmake command is to your liking.
 The Intel MKL Pardiso sparse solver is recommended, but does not appear to be available on Gaia.  On Gaia, UMFPack should be enabled instead.
@@ -182,7 +208,7 @@ To test the install, first do
 Then open a python or ipython console and try
 `import ngsolve`
 
-### Step 10
+### Step 9
 
 Make sure the `module load` commands above are present in your slurm batch script.
 Having these in your script means that no matter what your local environment settings are
@@ -194,7 +220,7 @@ and copy one of these into it and edit as needed.  Then submit your job like thi
 
 It's a good idea to read the (short) [Slurm documentation](https://slurm.schedmd.com/documentation.html)
 
-### Updating
+#### Updating
 
 To update NGSolve, simply re-run `./install_ngsolve_serial`.  The `NGserial` directory will be deleted and recreated.
 If you're using ngs_special_functions, you'll need to re-install it.

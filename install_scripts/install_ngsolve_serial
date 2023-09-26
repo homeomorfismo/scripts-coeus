@@ -3,24 +3,27 @@
 # This script installs Netgen/Ngsolve for serial processing
 # assuming that Python3 and Cmake3 are already installed
 
+# TODO I need to change this to make is useful in both clusters
+# TODO Cf. bash_aliases
+load-modules
+# if [[ $CLUSTER = "GAIA" ]]
+# then
+#     module load intel-18.0
+#     module load gcc-9.2.0
+# else
+#     module load intel
+#     if [[ -n $USECLANG ]]
+#     then
+#         module load clang-11.1.0
+#     else
+#         module load gcc-9.2.0
+#     fi
+# fi
 
-if [[ $CLUSTER = "GAIA" ]]
-then
-    module load intel-18.0
-    module load gcc-9.2.0
-else
-    module load intel
-    if [[ -n $USECLANG ]]
-    then
-        module load clang-11.1.0
-    else
-        module load gcc-9.2.0
-    fi
-fi
-
-export BASEDIR=$HOME/NGserial
-export BUILDDIR=$BASEDIR/build
-export SRCDIR=$BASEDIR/ngsolve
+export BASEDIR=$HOME/software/ngsolve-serial
+export BUILDDIR=$BASEDIR/ngs-build
+export SRCDIR=$BASEDIR/ngs-source
+export INSTALLDIR=$BASEDIR/ngs-install
 
 if [[ -d $BASEDIR ]]
 then
@@ -28,7 +31,7 @@ then
 fi
 
 mkdir $BASEDIR
-cd $BASEDIR && git clone https://github.com/NGSolve/ngsolve.git ngsolve
+cd $BASEDIR && git clone https://github.com/NGSolve/ngsolve.git ngs-source
 
 cd $SRCDIR
 git submodule update --init --recursive
@@ -60,6 +63,7 @@ else
           -DCMAKE_CXX_COMPILER:FILEPATH=$(which clang++) \
           $BASEDIR/ngsolve
     else
+        # TODO add more variables. CF. ngsolve docs
         # verbose option
         # export CXXFLAGS="-v"
         cmake \
